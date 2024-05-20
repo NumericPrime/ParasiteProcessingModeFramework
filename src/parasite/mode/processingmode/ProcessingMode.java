@@ -36,6 +36,7 @@ public class ProcessingMode extends JavaMode {
     public String getTitle() {
     	String fld=getFolder().getAbsolutePath();
     	List<String> settings;
+		//Reads the name of the mode from the ini file
 		try {
 			settings = Files.readAllLines(Path.of(fld,"parasite.ini"));
 	    	for(String set:settings) if(set.matches("parasite-name *:.*")){
@@ -57,6 +58,7 @@ public class ProcessingMode extends JavaMode {
     	String fld=getFolder().getAbsolutePath();
     	String parasiteName=null;
     	SketchCode[] cd=sketch.getCode();
+	//Reads sketch code and file names
     	String fnames[]=new String[cd.length];
     	String fcode[]=new String[cd.length];
     	for(int i=0;i<cd.length;i++) {
@@ -64,16 +66,20 @@ public class ProcessingMode extends JavaMode {
     		fcode[i]=cd[i].getProgram();
     	}
     	boolean deleted[]=new boolean[cd.length];
+	//applies changes to the sketch
     	try {
+		//Reads name of the Parasite class used
     		Parasite ps=null;
         	List<String> settings=Files.readAllLines(Path.of(fld,"parasite.ini"));
         	for(String set:settings) if(set.matches("class-name *:.*")){
         		String cln=set.replace(" ", "").replace("class-name:", "");
         		Class<Parasite> cls=(Class<Parasite>) Class.forName(cln);
+			//Creates instancee of parasite
         		ps=cls.getConstructor(new Class[] {}).newInstance();
         	}
     		String[] newRes=ps.editCode(sketch.getFolder().getAbsolutePath(),
     				sketch.getMainName(), fnames, fcode, deleted);
+		//Applies changes
     		for(int i=0;i<cd.length;i++) {
     			if(deleted[i]) {
     				sketch.removeCode(cd[i]);
@@ -82,39 +88,13 @@ public class ProcessingMode extends JavaMode {
     			cd[i].setProgram(newRes[i]);
     		}
     		ps.editSketch(sketch);
-    		/*parasite-name: Parasite Test
-class-name: parasite.example.ParasiteExample*/
-    		//Files.writeString(Path.of(fld,"log.log"), "Done!");
     	} catch (IOException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException | ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-    		//try {Files.writeString(Path.of(fld,"log.log"), "Failed!");}catch(Exception ex) {}
 			e.printStackTrace();
 		}
-    	/*Map<String,String> macro=new HashMap<String,String>();
-    	SketchCode[] sc=sketch.getCode();
-    	String mainName=sketch.getMainName();
-    	String metaCode="";*/
-    	/*
-    	String rt="";
-    	for(SketchCode sk:sc) {
-    		for(String line:sk.getProgram().split("\n"))
-	    		if(line.startsWith("#define ")){
-	    			String argList=
-	    			line.substring(line.indexOf("("),line.indexOf(")"));
-	    			String args[]=line.replace(" ","").split(",");
-	    			String contents=line.substring(line.indexOf(")")+1);
-	    			for(int i=)
-	    		}else {
-	    			
-	    		}
-    		}*/
     	return super.handleLaunch(sketch, rl, present);
     }
     /**
-     * Retrieve the ClassLoader for JavaMode. This is used by the compiler to load
-     * ECJ classes. Thanks to Ben Fry. Thanks to Joel Moniz for updating this for
-     * Processing 3.0.
-     * @return the class loader from java mode
+     * Retrieve the ClassLoader for JavaMode. 
      */
     @Override
     public ClassLoader getClassLoader() {
